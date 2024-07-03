@@ -15,15 +15,16 @@
  * 更 新 人: 
  * 更新时间: 2024/7/2 15:34
 """
+import sys
 from collections import OrderedDict
 import re
-
-from requests.compat import chardet
-
+from datetime import datetime, timedelta
 from util.logutil import logger
 
 # 评论数据解析
 from lxml import etree
+
+from weibo import DTFORMAT
 
 
 def parse_sql_comment(self, comment, weibo):
@@ -64,6 +65,8 @@ def parse_sql_comment(self, comment, weibo):
             sql_comment["created_at"] = seven_hours_ago.strftime('%Y-%m-%d')
         elif (len(sql_comment["created_at"].split('-')) == 2):
             sql_comment["created_at"] = datetime.now().year.__str__() + '-' + sql_comment["created_at"]
+        elif "昨天" in sql_comment["created_at"]:
+            aa, sql_comment["created_at"] = standardize_date(sql_comment["created_at"])
         else:
             date_format = '%a %b %d %H:%M:%S %z %Y'
             date_object = datetime.strptime(sql_comment["created_at"], date_format)
@@ -216,7 +219,7 @@ def parse_weibo(self, weibo_info):
     weibo["at_users"] = self.get_at_users(selector)
     weibo["text"] = remove_html_tags(weibo["text"])
     logger.info("去除html后微博内容：%s", weibo["text"])
-    return self.standardize_info(weibo)
+    return standardize_info(weibo)
 
 
 def print_user_info(self):
@@ -272,3 +275,44 @@ def _try_get_value(source_name, target_name, dict, json):
     value = json.get(target_name)
     if value:
         dict[source_name] = value
+
+DTFORMAT = "%Y-%m-%dT%H:%M:%S"
+
+def standardize_date(created_at):
+    if "刚刚" in created_at:
+        ts = datetime.now()
+    elif "分钟" in created_at:
+        minute = created_at[: created_at.find("分钟")]
+        minute = timedelta(minutes=int(minute))
+        ts = datetime.now() - minute
+    elif "小时" in created_at:
+        hour = created_at[: created_at.find("小时")]
+        hour = timedelta(hours=int(hour))
+        ts = datetime.now() - hour
+    elif "昨天" in created_at:
+        day = timedelta(days=1)
+        ts = datetime.now() - day
+    else:
+        created_at = created_at.replace("+0800 ", "")
+        ts = datetime.strptime(created_at, "%c")
+
+    created_at = ts.strftime(DTFORMAT)
+    full_created_at = ts.strftime("%Y-%m-%d %H:%M:%S")
+    return created_at, full_created_at
+
+"""标准化信息，去除乱码"""
+
+def standardize_info(weibo):
+    for k, v in weibo.items():
+        if (
+                "bool" not in str(type(v))
+                and "int" not in str(type(v))
+                and "list" not in str(type(v))
+                and "long" not in str(type(v))
+        ):
+            weibo[k] = (
+                v.replace("\u200b", "")
+                .encode(sys.stdout.encoding, "ignore")
+                .decode(sys.stdout.encoding)
+            )
+    return weibo

@@ -912,4 +912,7 @@ services:
 
 ## 安装依赖：
 如果服务器是国外的源安装不了，可以指定源安装：
+pip3 install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
 pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
+

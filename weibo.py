@@ -25,7 +25,6 @@ from util.notify import push_deer
 from util.parse_data_util import *
 from util.sqliteutil import *
 
-DTFORMAT = "%Y-%m-%dT%H:%M:%S"
 
 
 class Weibo(object):
@@ -368,7 +367,7 @@ class Weibo(object):
             user_info["verified"] = info.get("verified", False)
             user_info["verified_type"] = info.get("verified_type", -1)
             user_info["verified_reason"] = info.get("verified_reason", "")
-            user = self.standardize_info(user_info)
+            user = standardize_info(user_info)
             self.user = user
             self.user_to_database()
             return 0
@@ -674,44 +673,6 @@ class Weibo(object):
 
     """标准化微博发布时间"""
 
-    def standardize_date(self, created_at):
-        if "刚刚" in created_at:
-            ts = datetime.now()
-        elif "分钟" in created_at:
-            minute = created_at[: created_at.find("分钟")]
-            minute = timedelta(minutes=int(minute))
-            ts = datetime.now() - minute
-        elif "小时" in created_at:
-            hour = created_at[: created_at.find("小时")]
-            hour = timedelta(hours=int(hour))
-            ts = datetime.now() - hour
-        elif "昨天" in created_at:
-            day = timedelta(days=1)
-            ts = datetime.now() - day
-        else:
-            created_at = created_at.replace("+0800 ", "")
-            ts = datetime.strptime(created_at, "%c")
-
-        created_at = ts.strftime(DTFORMAT)
-        full_created_at = ts.strftime("%Y-%m-%d %H:%M:%S")
-        return created_at, full_created_at
-
-    """标准化信息，去除乱码"""
-
-    def standardize_info(self, weibo):
-        for k, v in weibo.items():
-            if (
-                    "bool" not in str(type(v))
-                    and "int" not in str(type(v))
-                    and "list" not in str(type(v))
-                    and "long" not in str(type(v))
-            ):
-                weibo[k] = (
-                    v.replace("\u200b", "")
-                    .encode(sys.stdout.encoding, "ignore")
-                    .decode(sys.stdout.encoding)
-                )
-        return weibo
 
     def print_weibo(self, weibo):
         """打印微博，若为转发微博，会同时打印原创和转发部分"""
@@ -754,7 +715,7 @@ class Weibo(object):
                 (
                     retweet["created_at"],
                     retweet["full_created_at"],
-                ) = self.standardize_date(retweeted_status["created_at"])
+                ) = standardize_date(retweeted_status["created_at"])
                 weibo["retweet"] = retweet
             else:  # 原创
                 if is_long:
@@ -763,7 +724,7 @@ class Weibo(object):
                         weibo = parse_weibo(self, weibo_info)
                 else:
                     weibo = parse_weibo(self, weibo_info)
-            weibo["created_at"], weibo["full_created_at"] = self.standardize_date(
+            weibo["created_at"], weibo["full_created_at"] = standardize_date(
                 weibo_info["created_at"]
             )
             return weibo
