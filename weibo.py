@@ -1556,7 +1556,7 @@ class Weibo(object):
                 self.first_crawler = True
                 const.CHECK_COOKIE["GUESS_PIN"] = True
 
-            since_date = self.since_date  # 查询最近几天的数据更新微博和评论
+            since_date = datetime.strptime(self.since_date, DTFORMAT)  # 查询最近几天的数据更新微博和评论
             if self.update_type == "append":
                 # 只抓取最新的数据
                 since_date = datetime.strptime(self.user_config["since_date"], DTFORMAT)
