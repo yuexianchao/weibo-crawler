@@ -909,3 +909,7 @@ services:
 
 1. 在`const.py`文件中，将`'NOTIFY': False`中的`False`设为`True`；
 2. 将`'PUSH_KEY': ''`的`''`替换为`'<你的push_key>'`
+
+## 安装依赖：
+如果服务器是国外的源安装不了，可以指定源安装：
+pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
