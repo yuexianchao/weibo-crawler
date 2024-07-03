@@ -49,6 +49,7 @@ class Weibo(object):
             logger.error("since_date 格式不正确，请确认配置是否正确")
             sys.exit()
         self.since_date = since_date  # 起始时间，即爬取发布日期从该值到现在的微博，形式为yyyy-mm-ddThh:mm:ss，如：2023-08-21T09:23:03
+        self.update_type = config.get("update_type", "append")
         self.start_page = config.get("start_page", 1)  # 开始爬的页，如果中途被限制而结束可以用此定义开始页码
         self.write_mode = config[
             "write_mode"
@@ -291,7 +292,7 @@ class Weibo(object):
         if "mongo" in self.write_mode:
             """将爬取的用户信息写入MongoDB数据库"""
             # user_list = [self.user]
-            info_to_mongodb(self,"user", [self.user])
+            info_to_mongodb(self, "user", [self.user])
             logger.info("%s信息写入MongoDB数据库完毕", self.user["screen_name"])
         if "sqlite" in self.write_mode:
             con = get_sqlite_connection()
@@ -389,7 +390,7 @@ class Weibo(object):
             js = json.loads(html, strict=False)
             weibo_info = js.get("status")
             if weibo_info:
-                weibo = parse_weibo(self,weibo_info)
+                weibo = parse_weibo(self, weibo_info)
                 return weibo
             sleep(random.randint(6, 10))
 
@@ -625,7 +626,7 @@ class Weibo(object):
     def get_article_url(self, selector):
         """获取微博中头条文章的url"""
         article_url = ""
-        if selector==None:
+        if selector == None:
             return article_url
         text = selector.xpath("string(.)")
         if text.startswith("发布了头条文章"):
@@ -670,7 +671,9 @@ class Weibo(object):
         elif string.endswith("亿"):
             string = float(string[:-1]) * 100000000
         return int(string)
+
     """标准化微博发布时间"""
+
     def standardize_date(self, created_at):
         if "刚刚" in created_at:
             ts = datetime.now()
@@ -692,7 +695,9 @@ class Weibo(object):
         created_at = ts.strftime(DTFORMAT)
         full_created_at = ts.strftime("%Y-%m-%d %H:%M:%S")
         return created_at, full_created_at
+
     """标准化信息，去除乱码"""
+
     def standardize_info(self, weibo):
         for k, v in weibo.items():
             if (
@@ -720,11 +725,12 @@ class Weibo(object):
         logger.info("-" * 120)
 
     """抓取一条微博的全部信息"""
+
     def get_one_weibo(self, info):
         try:
             weibo_info = info["mblog"]
             weibo_id = weibo_info["id"]
-            if weibo_id=='5050190226784711':
+            if weibo_id == '5050190226784711':
                 logger.info(weibo_info)
             retweeted_status = weibo_info.get("retweeted_status")
             is_long = (
@@ -736,15 +742,15 @@ class Weibo(object):
                 if is_long:
                     weibo = self.get_long_weibo(weibo_id)
                     if not weibo:
-                        weibo = parse_weibo(self,weibo_info)
+                        weibo = parse_weibo(self, weibo_info)
                 else:
-                    weibo = parse_weibo(self,weibo_info)
+                    weibo = parse_weibo(self, weibo_info)
                 if is_long_retweet:
                     retweet = self.get_long_weibo(retweet_id)
                     if not retweet:
-                        retweet = parse_weibo(self,retweeted_status)
+                        retweet = parse_weibo(self, retweeted_status)
                 else:
-                    retweet = parse_weibo(self,retweeted_status)
+                    retweet = parse_weibo(self, retweeted_status)
                 (
                     retweet["created_at"],
                     retweet["full_created_at"],
@@ -754,9 +760,9 @@ class Weibo(object):
                 if is_long:
                     weibo = self.get_long_weibo(weibo_id)
                     if not weibo:
-                        weibo = parse_weibo(self,weibo_info)
+                        weibo = parse_weibo(self, weibo_info)
                 else:
-                    weibo = parse_weibo(self,weibo_info)
+                    weibo = parse_weibo(self, weibo_info)
             weibo["created_at"], weibo["full_created_at"] = self.standardize_date(
                 weibo_info["created_at"]
             )
@@ -1340,7 +1346,7 @@ class Weibo(object):
     """将爬取的微博信息写入MongoDB数据库"""
 
     def weibo_to_mongodb(self, wrote_count):
-        info_to_mongodb(self,"weibo", self.weibo[wrote_count:])
+        info_to_mongodb(self, "weibo", self.weibo[wrote_count:])
         logger.info("%d条微博写入MongoDB数据库完毕", self.got_count)
 
     """
@@ -1391,7 +1397,7 @@ class Weibo(object):
         download_comment = self.download_comment and comment_max_count > 0
         count = 0
         for weibo_item in weibo_list:
-            logger.info("微博id： %d ，微博评论数%d  开始抓取评论", weibo_item["id"],weibo_item["comments_count"])
+            logger.info("微博id： %d ，微博评论数%d  开始抓取评论", weibo_item["id"], weibo_item["comments_count"])
             if (download_comment) and (weibo_item["comments_count"] > 0):
                 self.get_weibo_comments(
                     weibo_item, comment_max_count, self.mysql_insert_comments
@@ -1459,7 +1465,7 @@ class Weibo(object):
         if not comments or len(comments) == 0:
             return
         for comment in comments:
-            data = parse_sql_comment(self,comment, weibo)
+            data = parse_sql_comment(self, comment, weibo)
             mysql_insert(self, "weibo_comments", [data])
 
     """评论插入sqlite"""
@@ -1469,7 +1475,7 @@ class Weibo(object):
             return
         con = self.get_sqlite_connection()
         for comment in comments:
-            data = parse_sql_comment(self,comment, weibo)
+            data = parse_sql_comment(self, comment, weibo)
             sqlite_insert(con, data, "weibo_comments")
         con.close()
 
@@ -1507,6 +1513,7 @@ class Weibo(object):
                             info.append(self.start_date)
                         if len(info) > 2:
                             info[2] = self.start_date
+
                         lines[i] = " ".join(info)
                         break
         with codecs.open(user_config_file_path, "w", encoding="utf-8") as f:
@@ -1548,7 +1555,12 @@ class Weibo(object):
                 # 本次运行的某用户首次抓取，用于标记最新的微博id
                 self.first_crawler = True
                 const.CHECK_COOKIE["GUESS_PIN"] = True
-            since_date = datetime.strptime(self.user_config["since_date"], DTFORMAT)
+
+            since_date = self.since_date  # 查询最近几天的数据更新微博和评论
+            if self.update_type == "append":
+                # 只抓取最新的数据
+                since_date = datetime.strptime(self.user_config["since_date"], DTFORMAT)
+
             today = datetime.today()
             if since_date <= today:  # since_date 若为未来则无需执行
                 page_count = self.get_page_count()
@@ -1617,6 +1629,7 @@ class Weibo(object):
                         user_config["query_list"] = self.query_list
                     if user_config not in user_config_list:
                         user_config_list.append(user_config)
+                    logger.info(user_config)
         return user_config_list
 
     def initialize_info(self, user_config):
