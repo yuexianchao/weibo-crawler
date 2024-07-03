@@ -24,9 +24,6 @@ from util.logutil import logger
 # 评论数据解析
 from lxml import etree
 
-from weibo import DTFORMAT
-
-
 def parse_sql_comment(self, comment, weibo):
     if not comment:
         return
