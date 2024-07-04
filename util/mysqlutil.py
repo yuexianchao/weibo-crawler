@@ -91,97 +91,97 @@ def init_mysql(self):
     mysql_create_database(self, create_database)
     # 创建'weibo_user'表
     mysql_create_table(self, """
-             CREATE TABLE IF NOT EXISTS weibo_user (
-                id varchar(20) NOT NULL,
-                screen_name varchar(30),
-                gender varchar(10),
-                statuses_count INT,
-                followers_count INT,
-                follow_count INT,
-                registration_time varchar(20),
-                sunshine varchar(20),
-                birthday varchar(40),
-                location varchar(200),
-                education varchar(200),
-                company varchar(200),
-                description varchar(400),
-                profile_url varchar(200),
-                profile_image_url varchar(200),
-                avatar_hd varchar(200),
-                urank INT,
-                mbrank INT,
-                verified BOOLEAN DEFAULT 0,
-                verified_type INT,
-                verified_reason varchar(140),
-                PRIMARY KEY (id)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4""")
+CREATE TABLE IF NOT EXISTS weibo_user (
+    id varchar(20) NOT NULL COMMENT '用户ID',
+    screen_name varchar(30) COMMENT '用户名',
+    gender varchar(10) COMMENT '性别',
+    statuses_count INT COMMENT '微博数量',
+    followers_count INT COMMENT '关注者数量',
+    follow_count INT COMMENT '关注数量',
+    registration_time varchar(20) COMMENT '注册时间',
+    sunshine varchar(20) COMMENT '阳光信用',
+    birthday varchar(40) COMMENT '生日',
+    location varchar(200) COMMENT '所在地',
+    education varchar(200) COMMENT '教育背景',
+    company varchar(200) COMMENT '公司',
+    description varchar(400) COMMENT '个人简介',
+    profile_url varchar(200) COMMENT '个人主页链接',
+    profile_image_url varchar(200) COMMENT '个人头像链接',
+    avatar_hd varchar(200) COMMENT 'HD头像链接',
+    urank INT COMMENT '用户等级',
+    mbrank INT COMMENT '微博等级',
+    verified BOOLEAN DEFAULT 0 COMMENT '是否认证',
+    verified_type INT COMMENT '认证类型',
+    verified_reason varchar(140) COMMENT '认证原因',
+                    PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '微博用户表';  
+    """)
     # 创建'weibo_weibo'表
     mysql_create_table(self, """
-             CREATE TABLE IF NOT EXISTS weibo (
-                id varchar(20) NOT NULL
-                ,bid varchar(12) NOT NULL
-                ,user_id varchar(20)
-                ,screen_name varchar(30)
-                ,text varchar(20000)
-                ,article_url varchar(100)
-                ,topics varchar(200)
-                ,at_users varchar(1000)
-                ,pics varchar(3000)
-                ,video_url varchar(1000)
-                ,location varchar(100)
-                ,created_at DATETIME
-                ,source varchar(30)
-                ,attitudes_count INT
-                ,comments_count INT
-                ,reposts_count INT
-                ,retweet_id varchar(20)
-                ,PRIMARY KEY (id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    CREATE TABLE IF NOT EXISTS weibo (
+    id varchar(20) NOT NULL COMMENT '微博ID',
+    bid varchar(12) NOT NULL COMMENT '微博bid',
+    user_id varchar(20) COMMENT '用户ID',
+    screen_name varchar(30) COMMENT '用户名',
+    text varchar(20000) COMMENT '微博内容',
+    article_url varchar(100) COMMENT '文章链接',
+    topics varchar(200) COMMENT '话题',
+    at_users varchar(1000) COMMENT '@的用户',
+    pics varchar(3000) COMMENT '图片链接',
+    video_url varchar(1000) COMMENT '视频链接',
+    location varchar(100) COMMENT '发布位置',
+    created_at DATETIME COMMENT '发布时间',
+    source varchar(30) COMMENT '发布来源',
+    attitudes_count INT COMMENT '点赞数',
+    comments_count INT COMMENT '评论数',
+    reposts_count INT COMMENT '转发数',
+    retweet_id varchar(20) COMMENT '转发的微博ID',
+                    PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '微博表';  
             """)
     # 创建'weibo_bins'表
-
     mysql_create_table(self, """
-             CREATE TABLE IF NOT EXISTS weibo_bins (
-                id integer PRIMARY KEY AUTO_INCREMENT
-                ,ext varchar(10) NOT NULL /*file extension*/
-                ,data blob NOT NULL
-                ,weibo_id varchar(20)
-                ,comment_id varchar(20)
-                ,path text
-                ,url text
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    CREATE TABLE IF NOT EXISTS weibo_bins (
+    id integer PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    ext varchar(10) NOT NULL /*file extension*/ COMMENT '文件扩展名',
+    data blob NOT NULL COMMENT '二进制数据',
+    weibo_id varchar(20) COMMENT '微博ID',
+    comment_id varchar(20) COMMENT '评论ID',
+    path text COMMENT '路径',
+    url text COMMENT 'URL'
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '微博用户评论绑定关系'; 
             """)
     # 创建'weibo_comments'表
 
     mysql_create_table(self, """
-             CREATE TABLE IF NOT EXISTS weibo_comments (
-                id varchar(20) NOT NULL
-                ,bid varchar(20) NOT NULL
-                ,weibo_id varchar(32) NOT NULL
-                ,root_id varchar(20)
-                ,user_id varchar(20) NOT NULL
-                ,created_at varchar(20)
-                ,user_screen_name varchar(64) NOT NULL
-                ,user_avatar_url text
-                ,text varchar(1000)
-                ,pic_url text
-                ,like_count integer
-                ,PRIMARY KEY (id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    CREATE TABLE IF NOT EXISTS weibo_comments (
+    id varchar(20) NOT NULL COMMENT '评论ID',
+    bid varchar(20) NOT NULL COMMENT '微博bid',
+    weibo_id varchar(32) NOT NULL COMMENT '微博ID',
+    root_id varchar(20) COMMENT '根评论ID',
+    user_id varchar(20) NOT NULL COMMENT '用户ID',
+    created_at varchar(20) COMMENT '创建时间',
+    user_screen_name varchar(64) NOT NULL COMMENT '用户名',
+    user_avatar_url text COMMENT '用户头像链接',
+    text varchar(1000) COMMENT '评论内容',
+    pic_url text COMMENT '评论图片链接',
+    like_count integer COMMENT '点赞数',
+                    PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '微博评论';
             """)
     # 创建'weibo_reposts'表
 
     mysql_create_table(self, """
-             CREATE TABLE IF NOT EXISTS weibo_reposts (
-                id varchar(20) NOT NULL
-                ,bid varchar(20) NOT NULL
-                ,weibo_id varchar(32) NOT NULL
-                ,user_id varchar(20) NOT NULL
-                ,created_at varchar(20)
-                ,user_screen_name varchar(64) NOT NULL
-                ,user_avatar_url text
-                ,text varchar(1000)
-                ,like_count integer
-                ,PRIMARY KEY (id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    CREATE TABLE IF NOT EXISTS weibo_reposts (
+    id varchar(20) NOT NULL COMMENT '转发ID',
+    bid varchar(20) NOT NULL COMMENT '微博bid',
+    weibo_id varchar(32) NOT NULL COMMENT '微博ID',
+    user_id varchar(20) NOT NULL COMMENT '用户ID',
+    created_at varchar(20) COMMENT '创建时间',
+    user_screen_name varchar(64) NOT NULL COMMENT '用户名',
+    user_avatar_url text COMMENT '用户头像链接',
+    text varchar(1000) COMMENT '转发内容',
+    like_count integer COMMENT '点赞数',
+                    PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '微博转发';
             """)
