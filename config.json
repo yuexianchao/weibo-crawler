@@ -19,12 +19,12 @@
     "remove_html_tag": 0,
     "cookie": "your cookie",
     "mysql_config": {
-        "host": "tidb-public-test.chj.cloud",
-        "port": 13306,
-        "user": "dip_rw",
-        "password": "shIAPcqgG8AKtTbQ",
+        "host": "",
+        "port": "",
+        "user": "",
+        "password": "",
         "charset": "utf8mb4",
-        "database": "dip_app"
+        "database": ""
     },
     "mongodb_URI": "mongodb://[username:password@]host[:port][/[defaultauthdb][?options]]",
     "post_config": {
