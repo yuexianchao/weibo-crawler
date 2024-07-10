@@ -26,7 +26,6 @@ from util.parse_data_util import *
 from util.sqliteutil import *
 
 
-
 class Weibo(object):
     def __init__(self, config):
         """Weibo类初始化"""
@@ -672,7 +671,6 @@ class Weibo(object):
         return int(string)
 
     """标准化微博发布时间"""
-
 
     def print_weibo(self, weibo):
         """打印微博，若为转发微博，会同时打印原创和转发部分"""
@@ -1521,7 +1519,7 @@ class Weibo(object):
             if self.update_type == "append":
                 # 只抓取最新的数据
                 since_date = datetime.strptime(self.user_config["since_date"], DTFORMAT)
-
+            logger.info("开始时间{}".format(since_date))
             today = datetime.today()
             if since_date <= today:  # since_date 若为未来则无需执行
                 page_count = self.get_page_count()
