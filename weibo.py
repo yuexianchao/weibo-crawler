@@ -107,8 +107,9 @@ class Weibo(object):
                 }
                 for user_id in user_id_list
             ]
-        if "mysql" in self.write_mode:
-            init_mysql(self)
+        #数据表如果没创建需要先创建表
+        # if "mysql" in self.write_mode:
+        #     init_mysql(self)
         self.user_config_list = user_config_list  # 要爬取的微博用户的user_config列表
         self.user_config = {}  # 用户配置,包含用户id和since_date
         self.start_date = ""  # 获取用户第一条微博时的日期
@@ -277,7 +278,9 @@ class Weibo(object):
         self.last_weibo_date = (
             last_weibo_msg.split(" ")[1]
             if last_weibo_msg
-            else self.user_config["since_date"]
+            else {
+                self.user_config["since_date"]
+            }
         )
 
     def user_to_database(self):
@@ -847,8 +850,7 @@ class Weibo(object):
         try:
             json = req.json()
         except Exception as e:
-            logger.warning(e)
-            logger.warning("未能抓取完整评论 微博id: {id}".format(id=id))
+            logger.warning("未能抓取完整评论 微博id: {id} error: {error},返回值 ：{text}".format(id=id,error=e,text=req.text))
             return
 
         data = json.get("data")
@@ -1519,6 +1521,7 @@ class Weibo(object):
             if self.update_type == "append":
                 # 只抓取最新的数据
                 since_date = datetime.strptime(self.user_config["since_date"], DTFORMAT)
+            self.user_config["since_date"]=self.since_date
             logger.info("开始时间{}".format(since_date))
             today = datetime.today()
             if since_date <= today:  # since_date 若为未来则无需执行
